@@ -1,77 +1,63 @@
-SkillSwap 2.0
+SkillSwap 2.0 – Peer-to-Peer Skill Exchange Platform
 
-A full-stack learning exchange platform where students can teach the skills they already know and learn skills from others.
-This version includes recommendation matching (ML-based), real-time chat, authentication, and a modern full-stack architecture.
+SkillSwap 2.0 is a full-stack platform that enables users to teach skills they know and learn new skills from peers.
+It includes authentication, skill-based recommendations, connection management, and real-time chat using WebSockets.
 
-Table of Contents
+1. Features
+1.1 Authentication
 
-Overview
+JWT-based registration and login
 
-Features
+Secure token-based protected routes
 
-Tech Stack
+/api/auth/me/ for authenticated user details
 
-System Architecture
+1.2 Skill Management
 
-Project Structure
+Add skills you have
 
-Installation & Setup
+Add skills you want to learn
 
-Authentication Flow
+Skills used to match compatible partners
 
-Recommendation System (ML Layer)
+1.3 Recommendation System
 
-Real-Time Chat (WebSockets)
+Cosine similarity-based matching
 
-API Endpoints
+Top ranked users returned as recommendations
 
-Future Enhancements
+Backend ML layer implemented using scikit-learn
 
-1. Overview
+1.4 Requests & Connections
 
-SkillSwap is a platform that enables peer-to-peer learning.
-Users register, list skills they have, choose skills they want to learn, and get matched using a similarity-based recommendation model.
-Once matched, users can send requests, accept or reject them, and communicate using real-time chat.
+Send learning requests
 
-2. Features
-Core Features
+Accept or reject requests
 
-User Registration and Login (JWT Authentication)
+Connection list generated from accepted requests
 
-Role-based skill exchange (Teacher ↔ Learner model)
+View connected user profiles
 
-Add Skills You Have / Skills You Want to Learn
+1.5 Real-Time Chat
 
-Intelligent Recommendation System using cosine similarity
+One-to-one live chat using WebSockets
 
-View profiles of matched users
+Implemented with Django Channels (ASGI)
 
-Send and receive skill swap requests
+Persistent chat history stored in database
 
-Accept/Reject requests
+Chat bubbles with sender/receiver distinction
 
-View active connections
+Timestamps for each message
 
-Chat System
+Online, Connecting, Disconnected indicators
 
-Real-time chat using WebSockets
+Auto-scroll to last message
 
-WebSocket backend powered by Django Channels
+Per-connection chat rooms using room IDs
 
-Automatic message persistence in database
-
-Message timestamps
-
-Sender-based bubble colors (You vs Partner)
-
-System messages (room joined/connected)
-
-Scroll-to-bottom behavior
-
-Displays connection status (Connecting, Connected, Disconnected)
-
-3. Tech Stack
-Frontend
+2. Tech Stack
+2.1 Frontend
 
 Next.js (App Router)
 
@@ -79,183 +65,152 @@ React
 
 Tailwind CSS
 
-Fetch utilities for API communication
+WebSocket client integration
 
-WebSocket client for real-time chat
+LocalStorage-based token storage
 
-Backend
+2.2 Backend
+
+Django
 
 Django REST Framework
 
-Django Channels (ASGI – WebSockets)
+Django Channels (ASGI)
 
-SQLite (development database)
+Daphne server
 
-JWT Authentication
+SQLite (development)
 
-Python 3.10 environment
+2.3 Machine Learning
 
-Daphne ASGI server
+Scikit-learn
 
-Machine Learning Layer
+NumPy
 
-Scikit-Learn (cosine similarity)
+Custom similarity-based recommendation engine
 
-Skill similarity scoring and ranking
+2.4 Realtime Layer
 
-Real-time Layer
+ASGI
 
-Django Channels
+Channels
 
 WebSockets
 
-ASGI routing
-
-4. System Architecture
+3. System Architecture
 Frontend (Next.js)
-    |
-    |--- HTTPS REST Calls ---> Django REST API
-    |
-    |--- WebSocket Connection ---> Django Channels (ASGI)
-                                       |
-                                       |--- Channel Layer
-                                       |
-                                       |--- ChatConsumer
-                                                |
-                                                |--- Saves message to DB
-                                                |--- Broadcasts to room
+│
+├── REST API → Django REST Framework
+│
+└── WebSocket → Django Channels (ASGI)
+                    │
+                    ├── ChatConsumer handles messages
+                    ├── Saves messages to DB
+                    └── Broadcasts to group "chat_<roomId>"
 
-5. Project Structure
+4. Project Structure
 skillswap2.0/
+│
 ├── backend/
-│   ├── core/ (project)
-│   │   ├── asgi.py
-│   │   ├── settings.py
-│   │   └── urls.py
-│   ├── api/ (main REST app)
-│   ├── chat/ (WebSocket + Messaging app)
-│   │   ├── consumers.py
-│   │   ├── routing.py
-│   │   ├── models.py
-│   │   ├── serializers.py
-│   │   └── urls.py
-│   ├── ml/
-│   │   └── matcher.py
-│   ├── db.sqlite3
+│   ├── core/                 # Django project config
+│   ├── api/                  # Auth, users, skills, matching
+│   ├── chat/                 # Real-time chat app (Channels)
+│   ├── ml/                   # Matching model logic
 │   └── manage.py
 │
 └── frontend/
-    ├── app/
-    │   ├── chat/[roomId]/
-    │   │   └── page.js
-    │   ├── connections/
-    │   ├── login/
-    │   ├── signup/
-    │   ├── dashboard/
-    │   └── globals.css
-    ├── lib/api.js
+    ├── app/                  # Next.js pages
+    ├── lib/api.js            # API helper
     └── package.json
 
-6. Installation & Setup
-Backend Setup
+5. Installation & Setup
+5.1 Backend Setup
 cd backend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py runserver
 
-For WebSockets (ASGI)
-
-Run using Daphne instead of runserver:
-
+5.2 Running Backend with WebSockets
 daphne core.asgi:application --port 8000
 
-Frontend Setup
+5.3 Frontend Setup
 cd frontend
 npm install
 npm run dev
 
 
-Frontend runs at:
+Frontend runs on:
 http://localhost:3000
 
-Backend runs at:
+Backend runs on:
 http://127.0.0.1:8000
 
-7. Authentication Flow (JWT)
+6. Authentication Flow
+6.1 Register
+POST /api/auth/register/
 
-User registers → /api/auth/register/
+6.2 Login
 
-User logs in → receives access + refresh tokens
+Returns:
 
-Tokens stored in localStorage
+access token
 
-Every API request includes Authorization: Bearer token
+refresh token
 
-Token refresh handled manually using /api/auth/refresh/
+6.3 Current User
+GET /api/auth/me/
 
-8. Recommendation System (Machine Learning)
-How it Works
+7. Recommendation System
+7.1 Process
 
-Skills are converted into vectors
+Convert skills into representations
 
-Cosine similarity is calculated between user skill sets
+Calculate similarity scores
 
-Top-K matches returned
+Sort users
 
-Returned to frontend via /api/recommendations/
+Return recommendations
 
-Libraries
+7.2 Libraries
 
-sklearn
+scikit-learn
 
 numpy
 
-9. Real-Time Chat System (WebSockets)
-WebSocket URL
-ws://127.0.0.1:8000/ws/chat/<room_id>/
+8. Real-Time Chat System
+8.1 WebSocket URL
+ws://127.0.0.1:8000/ws/chat/<roomId>/
 
-How Chat Works
+8.2 Chat Flow
 
 Frontend opens WebSocket connection
 
-Backend adds user to a chat group (chat_<room_id>)
+Backend assigns user to chat_<roomId> group
 
-When message is sent:
+Consumer handles incoming messages
 
-Frontend → WebSocket → Consumer
+Messages are stored in DB
 
-Consumer saves to database
+All clients in group receive updates instantly
 
-Broadcasts message to the same group
+8.3 REST Endpoint for Chat History
+GET /api/chat/<roomId>/messages/
 
-All connected clients instantly receive the message
+8.4 Chat Message Model
 
-Data Flow
-Next.js WebSocket Client
-        ↓
-Django Channels Router
-        ↓
-ChatConsumer.receive()
-        ↓
-Message Saved to DB
-        ↓
-group_send()
-        ↓
-All Clients in Room
-
-Stored Message Model
 room_id
+
 sender_name
+
 text
+
 created_at
 
-10. API Endpoints
+9. REST API Endpoints
 Authentication
 POST /api/auth/register/
 POST /api/auth/login/
-POST /api/auth/refresh/
 GET  /api/auth/me/
 
 Users & Skills
@@ -263,48 +218,35 @@ POST /api/users/<id>/skills-have/
 POST /api/users/<id>/skills-want/
 GET  /api/recommendations/
 
-Requests
-POST /api/requests/
+Requests & Connections
 GET  /api/requests/incoming/
 GET  /api/requests/outgoing/
+POST /api/requests/send/
 POST /api/requests/<id>/action/
+GET  /api/connections/
 
-Connections
-GET /api/connections/
+Chat
+GET /api/chat/<roomId>/messages/
+ws://127.0.0.1:8000/ws/chat/<roomId>/
 
-Chat REST API
-GET /api/chat/<room_id>/messages/
+10. Future Enhancements
 
-WebSocket Route
-ws://127.0.0.1:8000/ws/chat/<room_id>/
+One-to-one video calls (WebRTC)
 
-11. Future Enhancements
-Chat Improvements
-
-Message read receipts
+Screen sharing
 
 Typing indicators
 
-Delete/Edit messages
+Read receipts
 
-File sharing
-
-Image preview in chat
+File and media sharing
 
 Push notifications
 
-Upcoming Major Features
+Docker-based deployment
 
-Video calling
+PostgreSQL migration
 
-Screensharing
+11. License
 
-Voice calls
-
-AI-generated learning paths
-
-Docker deployment
-
-PostgreSQL database for production
-
-CI/CD setup
+This project is created for educational and portfolio development purposes.
