@@ -42,6 +42,12 @@ export default function DashboardPage() {
     fetchData();
   }, [router]);
 
+  // helper: find status of outgoing request to a specific user
+  function getRequestStatusForUser(userId) {
+    const req = outgoingRequests.find((r) => r.to_user === userId);
+    return req ? req.status : null; // "pending" | "accepted" | "rejected" | null
+  }
+
   function handleLogout() {
     if (typeof window !== "undefined") {
       localStorage.removeItem("access");
@@ -198,6 +204,16 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+
+            {/* 👇 New: link to connections page */}
+            <div className="text-xs text-slate-600 text-center">
+              <Link
+                href="/connections"
+                className="text-blue-600 underline hover:text-blue-700"
+              >
+                View all connections
+              </Link>
+            </div>
           </div>
 
           {/* Matches list */}
@@ -221,54 +237,73 @@ export default function DashboardPage() {
 
             {!loading && !error && matches.length > 0 && (
               <div className="space-y-4">
-                {matches.map((m) => (
-                  <div
-                    key={m.id}
-                    className="border rounded-xl p-4 hover:shadow-sm transition-shadow bg-white"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-sm sm:text-base">
-                          {m.name}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Match score:{" "}
-                          <span className="font-mono">
-                            {typeof m.score === "number"
-                              ? m.score.toFixed(3)
-                              : m.score}
-                          </span>
-                        </p>
+                {matches.map((m) => {
+                  const status = getRequestStatusForUser(m.id);
+                  const disabled =
+                    status === "pending" || status === "accepted";
+
+                  const label =
+                    status === "pending"
+                      ? "Requested"
+                      : status === "accepted"
+                      ? "Connected"
+                      : "Request to learn";
+
+                  return (
+                    <div
+                      key={m.id}
+                      className="border rounded-xl p-4 hover:shadow-sm transition-shadow bg-white"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-sm sm:text-base">
+                            {m.name}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Match score:{" "}
+                            <span className="font-mono">
+                              {typeof m.score === "number"
+                                ? m.score.toFixed(3)
+                                : m.score}
+                            </span>
+                          </p>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Link
+                            href={`/users/${m.id}`}
+                            className="text-xs sm:text-sm px-3 py-1 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
+                          >
+                            View profile
+                          </Link>
+                          <button
+                            onClick={() => !disabled && handleRequest(m.id)}
+                            disabled={disabled}
+                            className={
+                              "text-xs sm:text-sm px-3 py-1 rounded-lg " +
+                              (disabled
+                                ? "bg-slate-300 text-slate-600 cursor-not-allowed"
+                                : "bg-slate-900 text-white hover:bg-slate-800")
+                            }
+                          >
+                            {label}
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="flex gap-2">
-                        <Link
-                          href={`/users/${m.id}`}
-                          className="text-xs sm:text-sm px-3 py-1 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
-                        >
-                          View profile
-                        </Link>
-                        <button
-                          onClick={() => handleRequest(m.id)}
-                          className="text-xs sm:text-sm px-3 py-1 rounded-lg bg-slate-900 text-white hover:bg-slate-800"
-                        >
-                          Request to learn
-                        </button>
+                      <div className="mt-3 space-y-1 text-xs text-slate-700">
+                        <p>
+                          <span className="font-semibold">Has:</span>{" "}
+                          {renderSkills(m.skills_have)}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Wants:</span>{" "}
+                          {renderSkills(m.skills_want)}
+                        </p>
                       </div>
                     </div>
-
-                    <div className="mt-3 space-y-1 text-xs text-slate-700">
-                      <p>
-                        <span className="font-semibold">Has:</span>{" "}
-                        {renderSkills(m.skills_have)}
-                      </p>
-                      <p>
-                        <span className="font-semibold">Wants:</span>{" "}
-                        {renderSkills(m.skills_want)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

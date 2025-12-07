@@ -31,6 +31,7 @@ from api.views import (
     OutgoingRequestsView,
     LearningRequestActionView,
     UserDetailView,
+    ConnectionsView,
 )
 
 
@@ -75,6 +76,9 @@ urlpatterns = [
 
         # User profile
     path("api/users/<int:pk>/", UserDetailView.as_view(), name="user-detail"),
+
+    path("api/connections/", ConnectionsView.as_view()),
+     path("api/", include("chat.urls")),
 
 ]
 

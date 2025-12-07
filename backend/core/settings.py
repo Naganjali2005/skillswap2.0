@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'api',
     
     'rest_framework_simplejwt',
+    'channels',
+     'chat', 
 ]
 
 from datetime import timedelta
@@ -95,6 +97,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
+
+
+ASGI_APPLICATION = "core.asgi.application"
+
+# For now, simple in-memory layer (no Redis yet)
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+
 
 
 # Database

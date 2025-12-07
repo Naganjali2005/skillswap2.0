@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.db.models import Q
+
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -141,14 +143,19 @@ class LearningRequestCreateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # avoid duplicate pending requests
+        # avoid duplicate pending or accepted requests
         if LearningRequest.objects.filter(
             from_user=request.user,
             to_user=to_user,
-            status="pending",
+            status__in=["pending", "accepted"],
         ).exists():
             return Response(
-                {"detail": "You already have a pending request to this user."},
+                {
+                    "detail": (
+                        "You already have a pending or accepted "
+                        "connection with this user."
+                    )
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -192,6 +199,56 @@ class OutgoingRequestsView(APIView):
         ).order_by("-created_at")
         serializer = LearningRequestSerializer(qs, many=True)
         return Response(serializer.data)
+    
+
+class ConnectionsView(APIView):
+    """
+    GET /api/connections/
+    List all accepted learning relationships for the current user.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = (
+            LearningRequest.objects.filter(status="accepted")
+            .filter(
+                Q(from_user=request.user) | Q(to_user=request.user)
+            )
+            .select_related("from_user", "to_user")
+            .order_by("-created_at")
+        )
+
+        results = []
+        for lr in qs:
+            if lr.from_user == request.user:
+                other = lr.to_user
+                role = "learner"  # current user is learner
+            else:
+                other = lr.from_user
+                role = "teacher"  # current user is teacher
+
+            # try to find existing conversation between the two users (if any)
+            conv = Conversation.objects.filter(
+                Q(user1=request.user, user2=other)
+                | Q(user1=other, user2=request.user)
+            ).first()
+
+            results.append(
+                {
+                    "id": lr.id,  # learning request id
+                    "other_user_id": other.id,
+                    "other_user_username": other.username,
+                    "other_user_email": other.email,
+                    "status": lr.status,  # should be "accepted"
+                    "role": role,  # "learner" or "teacher" from current user's view
+                    "created_at": lr.created_at,
+                    "conversation_id": conv.id if conv else None,
+                }
+            )
+
+        return Response(results)
+
 
 
 class LearningRequestActionView(APIView):
