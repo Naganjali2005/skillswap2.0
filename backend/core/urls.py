@@ -32,6 +32,10 @@ from api.views import (
     LearningRequestActionView,
     UserDetailView,
     ConnectionsView,
+    SkillsListView,
+    MySkillsView,
+    ProfileLinksView,
+    UserSearchView,
 )
 
 
@@ -79,6 +83,14 @@ urlpatterns = [
 
     path("api/connections/", ConnectionsView.as_view()),
      path("api/", include("chat.urls")),
+
+
+     path("api/skills/", SkillsListView.as_view(), name="skills-list"),
+path("api/my-skills/", MySkillsView.as_view(), name="my-skills"),
+path("api/profile/links/", ProfileLinksView.as_view(), name="profile-links"),
+    path("api/users/search/", UserSearchView.as_view(), name="user-search"),
+
+
 
 ]
 

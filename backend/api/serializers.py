@@ -6,6 +6,7 @@ from .models import (
     Skill,
     UserSkillHave,
     UserSkillWant,
+    UserProfile,
 )
 
 User = get_user_model()
@@ -95,3 +96,27 @@ class LearningRequestSerializer(serializers.ModelSerializer):
             "from_user_username",
             "to_user_username",
         ]
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = [
+            "github_url",
+            "linkedin_url",
+            "leetcode_url",
+            "portfolio_url",
+            "resume_url",
+        ]
+class UserDetailSerializer(serializers.ModelSerializer):
+    skills_have = UserSkillHaveSerializer(many=True, read_only=True)
+    skills_want = UserSkillWantSerializer(many=True, read_only=True)
+    profile = UserProfileSerializer(read_only=True)  # 👈 new
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "skills_have", "skills_want", "profile"]
+
+class UserSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name"]

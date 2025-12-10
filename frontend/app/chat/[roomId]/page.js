@@ -85,13 +85,12 @@ export default function ChatRoomPage() {
         const data = JSON.parse(event.data);
         console.log("INCOMING:", data);
 
-        // Normalize createdAt so every message has something usable
         const incoming = {
           ...data,
           createdAt:
-            data.createdAt || // camelCase from consumer
-            data.created_at || // just in case snake_case sneaks in
-            (!data.system ? new Date().toISOString() : null), // fallback for non-system
+            data.createdAt ||
+            data.created_at ||
+            (!data.system ? new Date().toISOString() : null),
         };
 
         setMessages((prev) => [...prev, incoming]);
@@ -143,23 +142,28 @@ export default function ChatRoomPage() {
     }
   };
 
-  // Small helper to show a nice status pill
   const getStatusInfo = () => {
     switch (connectionStatus) {
       case "connected":
-        return { text: "Connected", className: "bg-green-100 text-green-700" };
+        return {
+          text: "Connected",
+          className: "bg-emerald-900/60 text-emerald-300 border border-emerald-700",
+        };
       case "connecting":
         return {
           text: "Connecting…",
-          className: "bg-yellow-100 text-yellow-700",
+          className: "bg-yellow-900/60 text-yellow-300 border border-yellow-700",
         };
       case "error":
       case "disconnected":
-        return { text: "Disconnected", className: "bg-red-100 text-red-700" };
+        return {
+          text: "Disconnected",
+          className: "bg-red-900/60 text-red-300 border border-red-700",
+        };
       default:
         return {
           text: "Connecting…",
-          className: "bg-yellow-100 text-yellow-700",
+          className: "bg-yellow-900/60 text-yellow-300 border border-yellow-700",
         };
     }
   };
@@ -167,36 +171,44 @@ export default function ChatRoomPage() {
   const statusInfo = getStatusInfo();
 
   return (
-    <div className="min-h-screen bg-slate-50 flex justify-center">
-      <div className="w-full max-w-2xl px-4 py-6 flex flex-col">
-        {/* Header with other user name + status */}
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold">
-              Chat with {otherName}
-            </h1>
-            <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${statusInfo.className}`}
-            >
-              {statusInfo.text}
-            </span>
+    <div className="min-h-screen bg-slate-950 text-slate-50 flex justify-center">
+      <div className="w-full max-w-2xl px-4 py-5 sm:py-7 flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-slate-800 flex items-center justify-center text-sm font-semibold">
+              {otherName[0]?.toUpperCase() || "U"}
+            </div>
+            <div>
+              <h1 className="text-base sm:text-lg font-semibold">
+                Chat with {otherName}
+              </h1>
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium mt-1 ${statusInfo.className}`}
+              >
+                {statusInfo.text}
+              </span>
+            </div>
           </div>
+
           <button
             onClick={() => router.push("/connections")}
-            className="text-sm text-blue-600 hover:underline"
+            className="text-[11px] sm:text-xs text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline"
           >
             Back to connections
           </button>
         </div>
 
-        {/* messages */}
-        <div className="border rounded-xl bg-white shadow-sm h-96 mb-4 p-3 overflow-y-auto space-y-2 flex flex-col">
+        {/* Messages box */}
+        <div className="border border-slate-800 rounded-2xl bg-slate-900/70 h-96 mb-4 p-3 sm:p-4 overflow-y-auto flex flex-col space-y-2">
           {loadingHistory && (
-            <p className="text-sm text-slate-400">Loading messages…</p>
+            <p className="text-xs sm:text-sm text-slate-400">
+              Loading messages…
+            </p>
           )}
 
           {!loadingHistory && messages.length === 0 && (
-            <p className="text-sm text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-400">
               No messages yet. Say hi 👋
             </p>
           )}
@@ -206,7 +218,7 @@ export default function ChatRoomPage() {
               return (
                 <div
                   key={index}
-                  className="max-w-[80%] mx-auto px-3 py-2 rounded-lg text-xs bg-slate-100 text-slate-500 text-center"
+                  className="max-w-[80%] mx-auto px-3 py-1.5 rounded-lg text-[11px] bg-slate-800/80 text-slate-300 text-center"
                 >
                   {msg.message}
                 </div>
@@ -221,33 +233,38 @@ export default function ChatRoomPage() {
             return (
               <div
                 key={index}
-                className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm mb-1 ${
-                  isMe
-                    ? "bg-blue-600 text-white self-end ml-auto"
-                    : "bg-slate-200 text-slate-900 self-start mr-auto"
+                className={`flex ${
+                  isMe ? "justify-end" : "justify-start"
                 }`}
               >
-                <p className="text-[10px] opacity-70 mb-1">
-                  {isMe ? "You" : msg.senderName || "Partner"}
-                </p>
-                <p>{msg.message}</p>
-                {msg.createdAt && (
-                  <p className="text-[10px] opacity-60 mt-1 text-right">
-                    {formatTime(msg.createdAt)}
+                <div
+                  className={`max-w-[75%] px-3 py-2 rounded-2xl text-xs sm:text-sm mb-1 ${
+                    isMe
+                      ? "bg-indigo-600 text-white rounded-br-sm"
+                      : "bg-slate-800 text-slate-100 rounded-bl-sm"
+                  }`}
+                >
+                  <p className="text-[10px] opacity-70 mb-1">
+                    {isMe ? "You" : msg.senderName || "Partner"}
                   </p>
-                )}
+                  <p>{msg.message}</p>
+                  {msg.createdAt && (
+                    <p className="text-[10px] opacity-60 mt-1 text-right">
+                      {formatTime(msg.createdAt)}
+                    </p>
+                  )}
+                </div>
               </div>
             );
           })}
 
-          {/* dummy div to scroll into view */}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* input */}
+        {/* Input area */}
         <div className="flex gap-2">
           <textarea
-            className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             rows={1}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -256,11 +273,11 @@ export default function ChatRoomPage() {
           />
           <button
             onClick={handleSend}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:bg-slate-300"
+            className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:bg-slate-700 disabled:text-slate-400"
             disabled={
               !socket ||
               socket.readyState !== WebSocket.OPEN ||
-              !me // wait until we know who the user is
+              !me
             }
           >
             Send

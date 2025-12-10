@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Skill, UserSkillHave, UserSkillWant, LearningRequest, Conversation
+from .models import Skill, UserSkillHave, UserSkillWant, LearningRequest, Conversation, UserProfile
 
 
 @admin.register(Skill)
@@ -32,3 +32,11 @@ class LearningRequestAdmin(admin.ModelAdmin):
 class ConversationAdmin(admin.ModelAdmin):
     list_display = ("id", "user1", "user2", "created_at")
     search_fields = ("user1__username", "user2__username")
+
+
+from django.contrib import admin
+from .models import UserProfile
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "github_url", "linkedin_url", "leetcode_url")

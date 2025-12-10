@@ -119,3 +119,30 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Msg from {self.sender.username} in conv {self.conversation.id}"
+    
+from django.conf import settings
+from django.db import models
+
+# ... existing models Skill, LearningRequest, etc ...
+
+# api/models.py
+from django.conf import settings
+from django.db import models
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="profile",
+    )
+    github_url = models.URLField(blank=True)
+    linkedin_url = models.URLField(blank=True)
+    leetcode_url = models.URLField(blank=True)
+    portfolio_url = models.URLField(blank=True)
+    resume_url = models.URLField(blank=True)
+
+    def __str__(self):
+        return f"Profile of {self.user.username}"
+
+
