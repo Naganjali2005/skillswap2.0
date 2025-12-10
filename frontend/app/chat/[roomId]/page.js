@@ -55,8 +55,9 @@ export default function ChatRoomPage() {
           system: false,
           message: m.text,
           senderName: m.sender_name,
-          createdAt: m.created_at,
+          createdAt: m.created_at, // ISO string from backend
         }));
+        console.log("History messages:", mapped);
         setMessages(mapped);
       } catch (err) {
         console.error("Failed to load chat history:", err);
@@ -84,14 +85,16 @@ export default function ChatRoomPage() {
         const data = JSON.parse(event.data);
         console.log("INCOMING:", data);
 
-        // If server doesn’t send createdAt for system message, give it null
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...data,
-            createdAt: data.createdAt || null,
-          },
-        ]);
+        // Normalize createdAt so every message has something usable
+        const incoming = {
+          ...data,
+          createdAt:
+            data.createdAt || // camelCase from consumer
+            data.created_at || // just in case snake_case sneaks in
+            (!data.system ? new Date().toISOString() : null), // fallback for non-system
+        };
+
+        setMessages((prev) => [...prev, incoming]);
       } catch (e) {
         console.error("Error parsing message", e);
       }
@@ -146,12 +149,18 @@ export default function ChatRoomPage() {
       case "connected":
         return { text: "Connected", className: "bg-green-100 text-green-700" };
       case "connecting":
-        return { text: "Connecting…", className: "bg-yellow-100 text-yellow-700" };
+        return {
+          text: "Connecting…",
+          className: "bg-yellow-100 text-yellow-700",
+        };
       case "error":
       case "disconnected":
         return { text: "Disconnected", className: "bg-red-100 text-red-700" };
       default:
-        return { text: "Connecting…", className: "bg-yellow-100 text-yellow-700" };
+        return {
+          text: "Connecting…",
+          className: "bg-yellow-100 text-yellow-700",
+        };
     }
   };
 
@@ -205,7 +214,9 @@ export default function ChatRoomPage() {
             }
 
             const isMe =
-              me && msg.senderName && msg.senderName === me.username;
+              me &&
+              msg.senderName &&
+              msg.senderName.toLowerCase() === me.username.toLowerCase();
 
             return (
               <div
