@@ -75,6 +75,7 @@ The platform focuses on **skill matching**, **learning requests**, and **real-ti
 
 ## 📂 Project Structure
 
+```text
 skillswap/
 ├── backend/
 │   ├── api/
