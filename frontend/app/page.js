@@ -141,10 +141,7 @@ export default function HomePage() {
                 <p className="text-[11px] text-slate-400">Skills listed</p>
                 <p className="text-lg font-semibold text-slate-50">40+</p>
               </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-3 py-2 shadow-sm">
-                <p className="text-[11px] text-slate-400">Colleges</p>
-                <p className="text-lg font-semibold text-slate-50">10+</p>
-              </div>
+              
             </div>
           </section>
 
@@ -226,9 +223,7 @@ export default function HomePage() {
                 {/* small info strip */}
                 <div className="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-900/70 px-4 py-3 text-[11px] text-slate-300 shadow-inner">
                   <p>Built for students who learn better together.</p>
-                  <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
-                    Beta
-                  </span>
+                  
                 </div>
               </div>
             </div>
@@ -305,19 +300,7 @@ export default function HomePage() {
           </div>
 
           {/* testimonial card */}
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 text-xs text-slate-300 shadow-lg">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-              Student feedback
-            </p>
-            <p className="mt-2 text-[11px] italic text-slate-200">
-              “I taught Git & basic Python, and in return learned React from a
-              senior. We ended up building a mini project together, and I used
-              it in my resume.”
-            </p>
-            <p className="mt-3 text-[11px] font-medium text-slate-100">
-              – Third year, CSE
-            </p>
-          </div>
+          
         </section>
 
         {/* FEATURES SECTION */}

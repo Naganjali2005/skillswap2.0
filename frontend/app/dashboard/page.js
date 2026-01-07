@@ -16,9 +16,10 @@ export default function DashboardPage() {
   const [selectedSection, setSelectedSection] = useState("overview"); // sidebar section
   const router = useRouter();
 
-  // 🔍 search state (NEW)
+  // 🔍 search state
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -39,7 +40,8 @@ export default function DashboardPage() {
           localStorage.removeItem("access");
           localStorage.removeItem("refresh");
         }
-        router.push("/login");
+        // replace so back won't go to protected page
+        router.replace("/login");
       } finally {
         setLoading(false);
       }
@@ -58,7 +60,8 @@ export default function DashboardPage() {
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
     }
-    router.push("/login");
+    // replace current entry
+    router.replace("/login");
   }
 
   async function handleRequest(toUserId) {
@@ -86,7 +89,7 @@ export default function DashboardPage() {
     if (typeof skills[0] === "string") return skills.join(", ");
     if (typeof skills[0] === "object" && skills[0] !== null) {
       return skills
-        .map((s) => s.name || s.skill || s.title || "Skill")
+        .map((s) => s.name || s.skill || s.title || s.skill_name || "Skill")
         .join(", ");
     }
     return "–";
@@ -125,21 +128,24 @@ export default function DashboardPage() {
     connections: connections.length,
   };
 
-  // 🔍 search handler (NEW)
+  // 🔍 search handler
   async function handleSearch() {
-    if (!searchQuery.trim()) {
+    const q = (searchQuery || "").trim();
+    if (!q) {
       setSearchResults([]);
       return;
     }
+    setSearchLoading(true);
     try {
-      // assuming your backend route is /api/users/search/
-      const data = await apiGet(
-        `/api/users/search/?q=${encodeURIComponent(searchQuery)}`
-      );
-      setSearchResults(data.results || data); // handle paginated or plain
+      // backend endpoint assumed: /api/users/search/?q=...
+      const data = await apiGet(`/api/users/search/?q=${encodeURIComponent(q)}`);
+      // backend might return { results: [...] } or plain array
+      setSearchResults(data.results || data || []);
     } catch (err) {
       console.error("Search error:", err);
       setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
     }
   }
 
@@ -241,15 +247,21 @@ export default function DashboardPage() {
 
             {/* 🔍 Search bar – only in overview */}
             {selectedSection === "overview" && (
-              <div>
+              <div className="flex items-center gap-3">
                 <input
                   type="text"
                   placeholder="Search for users…"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  className="w-full max-w-sm px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm text-slate-200 placeholder-slate-500"
+                  className="w-full max-w-md px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm text-slate-200 placeholder-slate-500"
                 />
+                <button
+                  onClick={handleSearch}
+                  className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-sm"
+                >
+                  {searchLoading ? "Searching…" : "Search"}
+                </button>
               </div>
             )}
           </div>
@@ -271,28 +283,41 @@ export default function DashboardPage() {
           ) : (
             <>
               {/* 🔍 Search results – shown above overview cards */}
-              {selectedSection === "overview" && searchResults.length > 0 && (
-                <div className="mb-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-xs">
-                  <p className="text-sm font-semibold mb-2 text-slate-50">
-                    Search results
-                  </p>
-                  {searchResults.map((u) => (
-                    <div
-                      key={u.id}
-                      className="flex items-center justify-between border-b border-slate-800 py-2"
-                    >
-                      <span className="text-slate-200 text-sm">
-                        @{u.username}
-                      </span>
-                      <Link
-                        href={`/users/${u.id}`}
-                        className="text-[11px] px-3 py-1 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800"
-                      >
-                        View profile
-                      </Link>
+              {selectedSection === "overview" && (
+                <>
+                  {searchResults.length > 0 ? (
+                    <div className="mb-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-xs">
+                      <p className="text-sm font-semibold mb-2 text-slate-50">
+                        Search results
+                      </p>
+                      {searchResults.map((u) => (
+                        <div
+                          key={u.id}
+                          className="flex items-center justify-between border-b border-slate-800 py-2"
+                        >
+                          <span className="text-slate-200 text-sm">
+                            @{u.username}
+                          </span>
+                          <div className="flex gap-2">
+                            <Link
+                              href={`/users/${u.id}`}
+                              className="text-[11px] px-3 py-1 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800"
+                            >
+                              View profile
+                            </Link>
+                            {/* you could also add "Request" here if you want */}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  ) : (
+                    searchQuery.trim() !== "" && (
+                      <p className="mb-4 text-sm text-slate-400">
+                        No users found for “{searchQuery}”.
+                      </p>
+                    )
+                  )}
+                </>
               )}
 
               {selectedSection === "overview" && (
@@ -636,7 +661,7 @@ function RequestsSection({ incomingRequests, outgoingRequests }) {
             You haven&apos;t requested to learn from anyone yet.
           </p>
         ) : (
-          <div className="space-y-1 text-[12px] text-slate-300">
+          <div className="space-y-1 text-[12px]">
             {outgoingRequests.map((r) => (
               <p key={r.id}>
                 <span className="font-medium">
@@ -766,6 +791,7 @@ function ProfileSection({ user }) {
   );
 }
 
+/* small stat card */
 function StatCard({ label, value }) {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 flex flex-col gap-1">

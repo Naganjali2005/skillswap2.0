@@ -34,6 +34,7 @@ export default function ConnectionsPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 flex items-start justify-center px-4 py-6 sm:px-6 sm:py-10">
       <div className="w-full max-w-4xl rounded-2xl border border-slate-800 bg-slate-900/70 shadow-2xl px-5 py-6 sm:px-7 sm:py-7 space-y-4">
+
         {/* HEADER */}
         <div className="flex items-center justify-between gap-4 border-b border-slate-800 pb-3">
           <div>
@@ -41,8 +42,7 @@ export default function ConnectionsPage() {
               Your connections
             </h1>
             <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
-              These are the students you&apos;re connected with. Start a chat or
-              jump into a call.
+              These are the students you&apos;re connected with. Start a chat to collaborate.
             </p>
           </div>
           <button
@@ -53,13 +53,14 @@ export default function ConnectionsPage() {
           </button>
         </div>
 
-        {/* ERROR / LOADING */}
+        {/* ERROR */}
         {error && (
           <p className="text-[11px] text-red-300 bg-red-950/40 border border-red-800 px-3 py-2 rounded-lg">
             {error}
           </p>
         )}
 
+        {/* LOADING */}
         {loading && (
           <p className="text-xs sm:text-sm text-slate-400 mt-2">
             Loading connections…
@@ -142,23 +143,6 @@ export default function ConnectionsPage() {
                         className="inline-flex items-center justify-center rounded-lg bg-slate-800 px-3 py-1.5 text-[11px] sm:text-xs text-slate-500 cursor-not-allowed"
                       >
                         Chat unavailable
-                      </button>
-                    )}
-
-                    {/* Call */}
-                    {hasConversation ? (
-                      <Link
-                        href={`/video/${c.conversation_id}`}
-                        className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-white hover:bg-emerald-600"
-                      >
-                        Call
-                      </Link>
-                    ) : (
-                      <button
-                        disabled
-                        className="inline-flex items-center justify-center rounded-lg bg-slate-800 px-3 py-1.5 text-[11px] sm:text-xs text-slate-500 cursor-not-allowed"
-                      >
-                        Call unavailable
                       </button>
                     )}
                   </div>

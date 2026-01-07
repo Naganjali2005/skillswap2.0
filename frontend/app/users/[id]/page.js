@@ -5,8 +5,8 @@ import { apiGet } from "../../../lib/api";
 import { useRouter, useParams } from "next/navigation";
 
 export default function UserProfilePage() {
-  const params = useParams();              // ✅ get params with hook
-  const id = params?.id;                   // "1", "2", etc.
+  const params = useParams(); // get route params
+  const id = params?.id;
 
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
@@ -24,7 +24,7 @@ export default function UserProfilePage() {
         const msg =
           err?.detail ||
           err?.error ||
-          JSON.stringify(err) ||
+          (typeof err === "object" ? JSON.stringify(err) : err) ||
           "Could not load profile.";
         setError(msg);
       }
@@ -33,85 +33,197 @@ export default function UserProfilePage() {
     loadProfile();
   }, [id]);
 
+  // safe render helpers (handles different shapes)
+  function renderHaveSkills(skills) {
+    if (!skills || skills.length === 0) {
+      return <p className="text-xs text-slate-400">No skills listed.</p>;
+    }
+    return (
+      <ul className="text-sm space-y-2">
+        {skills.map((s, idx) => {
+          // try common property names
+          const name = s.skill_name ?? s.name ?? s.skill ?? (typeof s === "string" ? s : `Skill ${idx + 1}`);
+          const level = s.level ? ` (${s.level})` : s.level_label ? ` (${s.level_label})` : "";
+          return (
+            <li key={s.id ?? idx} className="text-slate-200">
+              {name}
+              <span className="text-slate-400">{level}</span>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  function renderWantSkills(skills) {
+    if (!skills || skills.length === 0) {
+      return <p className="text-xs text-slate-400">No skills listed.</p>;
+    }
+    return (
+      <ul className="text-sm space-y-2">
+        {skills.map((s, idx) => {
+          const name = s.skill_name ?? s.name ?? s.skill ?? (typeof s === "string" ? s : `Skill ${idx + 1}`);
+          return (
+            <li key={s.id ?? idx} className="text-slate-200">
+              {name}
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-100 flex items-start justify-center p-4 sm:p-8">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-md p-6 sm:p-8 space-y-4">
-        <div className="flex items-center justify-between border-b pb-3">
-          <h1 className="text-xl sm:text-2xl font-semibold">
-            User Profile
-          </h1>
+    <div className="min-h-screen bg-slate-950 text-slate-50 flex items-start justify-center p-4 sm:p-8">
+      <div className="w-full max-w-4xl rounded-2xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">User Profile</h1>
           <button
             onClick={() => router.back()}
-            className="text-xs sm:text-sm text-blue-600 underline"
+            className="text-sm text-indigo-300 hover:text-indigo-200"
           >
             Back
           </button>
         </div>
 
         {error && (
-          <p className="text-sm text-red-600">
-            {error}
-          </p>
+          <div className="rounded-md bg-rose-950/40 border border-rose-800 p-3">
+            <p className="text-sm text-rose-300">{error}</p>
+          </div>
         )}
 
         {!profile && !error && (
-          <p className="text-sm text-slate-500">Loading…</p>
+          <div className="rounded-md bg-slate-900/50 border border-slate-800 p-4">
+            <p className="text-sm text-slate-400">Loading…</p>
+          </div>
         )}
 
         {profile && (
-          <div className="space-y-4">
-            <div className="border rounded-xl p-4 bg-slate-50 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-lg font-semibold">
-                {profile.username[0].toUpperCase()}
+          <>
+            {/* top card */}
+            <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 flex items-center gap-4">
+              <div className="h-14 w-14 rounded-full bg-slate-800 text-slate-100 flex items-center justify-center text-xl font-semibold">
+                {profile.username ? profile.username[0].toUpperCase() : "U"}
               </div>
-              <div>
-                <p className="text-sm font-semibold">{profile.username}</p>
-                <p className="text-xs text-slate-500">
-                  {profile.email || "No email set"}
+
+              <div className="flex-1">
+                <p className="text-lg font-semibold text-slate-50">{profile.username}</p>
+                <p className="text-sm text-slate-400 mt-1">{profile.email || "No email set"}</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  User ID: <span className="font-mono text-slate-300">{profile.id}</span>
                 </p>
-                <p className="text-[11px] text-slate-400 mt-1">
-                  User ID: {profile.id}
-                </p>
+              </div>
+
+              <div className="flex flex-col items-end gap-2">
+                {/* optional: keep this as a UI affordance; action already exists on server */}
+                <button
+                  onClick={() => {
+                    // navigate to requests page with prefilled user (optional UX)
+                    router.push(`/requests?to=${profile.id}`);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm"
+                >
+                  Request to learn
+                </button>
+                <a
+                  className="text-xs text-slate-300 underline-offset-2 hover:underline"
+                  href={`/connections?user=${profile.id}`}
+                >
+                  Open connections
+                </a>
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="border rounded-xl p-4 bg-slate-50">
-                <p className="text-sm font-semibold mb-2">
-                  Skills they HAVE
-                </p>
-                {profile.skills_have.length === 0 ? (
-                  <p className="text-xs text-slate-500">No skills listed.</p>
-                ) : (
-                  <ul className="text-xs space-y-1">
-                    {profile.skills_have.map((s) => (
-                      <li key={s.id}>
-                        {s.skill_name}{" "}
-                        <span className="text-slate-500">
-                          ({s.level})
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+            {/* skills + links */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                <p className="text-sm font-semibold text-slate-100 mb-3">Skills they HAVE</p>
+                {renderHaveSkills(profile.skills_have)}
               </div>
 
-              <div className="border rounded-xl p-4 bg-slate-50">
-                <p className="text-sm font-semibold mb-2">
-                  Skills they WANT
-                </p>
-                {profile.skills_want.length === 0 ? (
-                  <p className="text-xs text-slate-500">No skills listed.</p>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                <p className="text-sm font-semibold text-slate-100 mb-3">Skills they WANT</p>
+                {renderWantSkills(profile.skills_want)}
+              </div>
+
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                <p className="text-sm font-semibold text-slate-100 mb-3">Profile links</p>
+                {profile.profile_links ? (
+                  <div className="space-y-2 text-sm">
+                    {profile.profile_links.github && (
+                      <a
+                        href={profile.profile_links.github}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-200 block hover:underline"
+                      >
+                        GitHub
+                      </a>
+                    )}
+                    {profile.profile_links.linkedin && (
+                      <a
+                        href={profile.profile_links.linkedin}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-200 block hover:underline"
+                      >
+                        LinkedIn
+                      </a>
+                    )}
+                    {profile.profile_links.leetcode && (
+                      <a
+                        href={profile.profile_links.leetcode}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-200 block hover:underline"
+                      >
+                        LeetCode
+                      </a>
+                    )}
+                    {profile.profile_links.portfolio && (
+                      <a
+                        href={profile.profile_links.portfolio}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-200 block hover:underline"
+                      >
+                        Portfolio
+                      </a>
+                    )}
+                    {profile.profile_links.resume && (
+                      <a
+                        href={profile.profile_links.resume}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-200 block hover:underline"
+                      >
+                        Resume
+                      </a>
+                    )}
+                    {/* fallback: list any other keys */}
+                    {Object.entries(profile.profile_links).map(([k, v]) => {
+                      if (!v) return null;
+                      const known = ["github", "linkedin", "leetcode", "portfolio", "resume"];
+                      if (known.includes(k)) return null;
+                      return (
+                        <a
+                          key={k}
+                          href={v}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-slate-200 block hover:underline"
+                        >
+                          {k}
+                        </a>
+                      );
+                    })}
+                  </div>
                 ) : (
-                  <ul className="text-xs space-y-1">
-                    {profile.skills_want.map((s) => (
-                      <li key={s.id}>{s.skill_name}</li>
-                    ))}
-                  </ul>
+                  <p className="text-xs text-slate-400">No profile links.</p>
                 )}
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

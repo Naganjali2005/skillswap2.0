@@ -36,6 +36,7 @@ from api.views import (
     MySkillsView,
     ProfileLinksView,
     UserSearchView,
+    UpdateUserView,
 )
 
 
@@ -89,6 +90,8 @@ urlpatterns = [
 path("api/my-skills/", MySkillsView.as_view(), name="my-skills"),
 path("api/profile/links/", ProfileLinksView.as_view(), name="profile-links"),
     path("api/users/search/", UserSearchView.as_view(), name="user-search"),
+    path("api/auth/update/", UpdateUserView.as_view(), name="update-user"),
+
 
 
 

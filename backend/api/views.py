@@ -1,5 +1,9 @@
 from django.shortcuts import render
 from django.db.models import Q
+from rest_framework import generics
+from rest_framework import permissions
+
+
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -505,19 +509,31 @@ class UserSearchView(APIView):
 
     def get(self, request):
         q = request.query_params.get("q", "").strip()
-
         if not q:
-            return Response([])
+            return Response([], status=status.HTTP_200_OK)
 
-        queryset = (
-            User.objects.filter(
-                Q(username__icontains=q)
-                | Q(first_name__icontains=q)
-                | Q(last_name__icontains=q)
-            )
-            .exclude(id=request.user.id)  # don’t show yourself
-            .order_by("username")[:20]    # limit some results
-        )
+        try:
+            qs = User.objects.filter(username__icontains=q).values("id", "username", "email")
+            # exclude self
+            qs = qs.exclude(id=request.user.id)
+            return Response(list(qs), status=status.HTTP_200_OK)
+        except Exception as e:
+            # log the error to console/server log and return safe response
+            import logging
+            logging.exception("User search failed")
+            return Response({"detail": "Server error during search"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
-        serializer = UserSearchSerializer(queryset, many=True)
-        return Response(serializer.data)
+from rest_framework import generics, permissions
+
+class UpdateUserView(generics.UpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # exclude current user so they can keep their own email
+        return User.objects.exclude(id=self.request.user.id)
+
+    def get_object(self):
+        return self.request.user
+  # user can update only their account
