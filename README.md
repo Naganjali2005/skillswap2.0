@@ -1,27 +1,59 @@
 # SkillSwap 🤝
 
-SkillSwap is a peer-to-peer learning platform where students can exchange skills,  
-chat in real time, and collaborate using shared resources and calls.
+SkillSwap is a peer-to-peer learning platform where students can exchange skills, connect with like-minded learners, chat in real time, and collaborate through shared resources.
+
+The platform focuses on **skill matching**, **learning requests**, and **real-time communication**.
 
 ---
 
 ## 🚀 Features
 
-### ✅ Implemented
-- 🔐 JWT-based authentication (Login & Register)
-- 📧 Unique email enforcement (signup + profile update)
-- 👤 User profiles with portfolio links
-  - GitHub
-  - LinkedIn
-  - LeetCode
-  - Resume / Portfolio
-- 🧠 Skill management
-  - Skills you have
-  - Skills you want to learn
-- 🔄 Learning request system (send / accept)
-- 💬 Real-time chat using WebSockets (Django Channels)
-- 🔗 Video calls via Google Meet link sharing
-- 🛡️ Secure APIs with role-based access
+### ✅ Implemented Features
+
+- 🔐 **JWT-based Authentication**
+  - User registration and login
+  - Secure access using access & refresh tokens
+
+- 📧 **Unique Email Enforcement**
+  - Email must be unique during signup
+  - Email uniqueness is also validated during profile updates
+
+- 👤 **User Profiles**
+  - Username & email management
+  - Portfolio & social links:
+    - GitHub
+    - LinkedIn
+    - LeetCode
+    - Portfolio / Resume
+
+- 🧠 **Skill Management**
+  - Skills the user **has**
+  - Skills the user **wants to learn**
+
+- 🤝 **Learning Request System**
+  - Send learning requests to other users
+  - Accept or reject requests
+
+- 🧮 **Smart Skill Matching (Cosine Similarity)**
+  - Users are recommended based on:
+    - Skills they have
+    - Skills they want to learn
+  - Matching logic implemented using **cosine similarity**
+  - Helps surface the most relevant learning partners
+
+- 💬 **Real-Time Chat**
+  - One-to-one chat using **WebSockets**
+  - Built with **Django Channels**
+  - Message history support
+
+- 🔗 **Video Call Support**
+  - Google Meet links generated and shared directly in chat
+  - Clicking the link opens Meet in a new tab
+  - Link is visible to both users instantly
+
+- 🛡️ **Secure Backend APIs**
+  - Auth-protected endpoints
+  - Clean REST architecture
 
 ---
 
@@ -30,6 +62,7 @@ chat in real time, and collaborate using shared resources and calls.
 ### Frontend
 - Next.js (App Router)
 - Tailwind CSS
+- JavaScript
 - WebSockets
 
 ### Backend
@@ -40,67 +73,91 @@ chat in real time, and collaborate using shared resources and calls.
 
 ---
 
-## ⚙️ Local Setup
+## 📂 Project Structure
 
-### 1️⃣ Clone the repository
-```bash
-git clone https://github.com/<your-username>/skillswap.git
-cd skillswap
-```
+skillswap/
+├── backend/
+│   ├── api/
+│   │   ├── serializers.py
+│   │   ├── views.py
+│   │   └── urls.py
+│   ├── chat/
+│   │   ├── consumers.py
+│   │   ├── routing.py
+│   │   └── models.py
+│   ├── core/
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── asgi.py
+│   │   └── wsgi.py
+│   ├── ml/
+│   │   └── matcher.py
+│   ├── staticfiles/
+│   ├── db.sqlite3
+│   └── manage.py
+│
+├── frontend/
+│   ├── app/
+│   │   ├── chat/
+│   │   ├── connections/
+│   │   ├── dashboard/
+│   │   ├── login/
+│   │   ├── signup/
+│   │   ├── profile/
+│   │   ├── search/
+│   │   ├── skills/
+│   │   └── users/
+│   ├── lib/
+│   │   └── api.js
+│   ├── public/
+│   └── package.json
+│
+├── README.md
+└── .gitignore
 
 ---
 
-### 2️⃣ Backend setup
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
-```
+## ⚙️ Local Setup
+
+### 1️⃣ Clone the Repository
+
+git clone https://github.com/<your-username>/skillswap.git  
+cd skillswap
+
+---
+
+### 2️⃣ Backend Setup
+
+cd backend  
+python -m venv venv  
+venv\Scripts\activate  
+pip install -r requirements.txt  
+python manage.py migrate  
+python manage.py createsuperuser  
+python manage.py runserver  
 
 Backend runs at:  
 http://127.0.0.1:8000
 
 ---
 
-### 3️⃣ Frontend setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
+### 3️⃣ Frontend Setup
+
+cd frontend  
+npm install  
+npm run dev  
 
 Frontend runs at:  
 http://localhost:3000
 
 ---
 
-## 📌 Project Structure
-```text
-skillswap/
-├── backend/
-│   ├── api/
-│   ├── chat/
-│   ├── call/
-│   └── core/
-├── frontend/
-│   └── app/
-│       ├── chat/
-│       ├── connections/
-│       ├── profile/
-│       └── dashboard/
-```
-
----
-
 ## 🔮 Upcoming Features
+
 - ⭐ Ratings & feedback system
 - 📅 Session scheduling
 - 🔔 Notifications
-- 🤖 Smart skill matching
+- 🤖 Enhanced recommendation logic
 - 📊 User activity insights
 
 ---
@@ -114,4 +171,5 @@ Aspiring Full-Stack Developer 🚀
 ---
 
 ## 📜 License
-This project is for educational purposes.
+
+This project is developed for educational purposes.
