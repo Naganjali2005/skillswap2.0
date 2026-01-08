@@ -8,3 +8,5 @@ channels
 daphne
 
 python-dotenv
+scikit-learn==1.4.2
+
