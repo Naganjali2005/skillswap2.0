@@ -34,7 +34,7 @@ function renderMessageWithLinks(text) {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline text-white hover:text-indigo-200 break-all"
+          className="underline text-emerald-700 hover:text-emerald-800 break-all"
         >
           {part}
         </a>
@@ -68,7 +68,7 @@ export default function ChatRoomPage() {
         const data = await apiGet("/api/auth/me/");
         setMe(data);
       } catch (err) {
-        console.error("Failed to fetch current user:", err);
+        console.error(err);
       }
     }
     fetchMe();
@@ -89,7 +89,7 @@ export default function ChatRoomPage() {
         }));
         setMessages(mapped);
       } catch (err) {
-        console.error("Failed to load chat history:", err);
+        console.error(err);
       } finally {
         setLoadingHistory(false);
       }
@@ -105,23 +105,15 @@ export default function ChatRoomPage() {
     const ws = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${roomId}/`);
 
     ws.onopen = () => setConnectionStatus("connected");
-
     ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...data,
-            createdAt:
-              data.createdAt ||
-              data.created_at ||
-              (!data.system ? new Date().toISOString() : null),
-          },
-        ]);
-      } catch (e) {
-        console.error("Error parsing message", e);
-      }
+      const data = JSON.parse(event.data);
+      setMessages((prev) => [
+        ...prev,
+        {
+          ...data,
+          createdAt: data.createdAt || data.created_at || new Date().toISOString(),
+        },
+      ]);
     };
 
     ws.onerror = () => setConnectionStatus("error");
@@ -150,13 +142,6 @@ export default function ChatRoomPage() {
     setInput("");
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
   /* ---------- Start Video ---------- */
   const handleStartVideoCall = () => {
     if (!socket || socket.readyState !== WebSocket.OPEN || !me) return;
@@ -175,20 +160,20 @@ export default function ChatRoomPage() {
 
   /* ---------- UI ---------- */
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex justify-center">
-      <div className="w-full max-w-2xl px-4 py-5 flex flex-col">
+    <div className="min-h-screen bg-emerald-50 flex justify-center px-4 py-8">
+      <div className="w-full max-w-2xl bg-white rounded-2xl border border-slate-200 px-4 py-5 flex flex-col">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+        <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-3">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-slate-800 flex items-center justify-center text-sm font-semibold">
+            <div className="h-9 w-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-semibold">
               {otherName[0]?.toUpperCase() || "U"}
             </div>
             <div>
-              <h1 className="text-base font-semibold">
+              <h1 className="text-sm font-semibold text-slate-800">
                 Chat with {otherName}
               </h1>
-              <span className="text-[10px] text-emerald-400">
+              <span className="text-[10px] text-emerald-600">
                 {connectionStatus}
               </span>
             </div>
@@ -196,20 +181,20 @@ export default function ChatRoomPage() {
 
           <button
             onClick={() => router.push("/connections")}
-            className="text-xs text-indigo-300 hover:underline"
+            className="text-xs text-emerald-600 hover:underline"
           >
-            Back to connections
+            Back
           </button>
         </div>
 
         {/* Messages */}
-        <div className="border border-slate-800 rounded-2xl bg-slate-900/70 h-96 mb-4 p-3 overflow-y-auto space-y-2">
+        <div className="border border-slate-200 rounded-xl bg-white h-96 mb-4 p-3 overflow-y-auto space-y-2">
           {loadingHistory && (
-            <p className="text-xs text-slate-400">Loading messages…</p>
+            <p className="text-xs text-slate-500">Loading messages…</p>
           )}
 
           {!loadingHistory && messages.length === 0 && (
-            <p className="text-xs text-slate-400">No messages yet. Say hi 👋</p>
+            <p className="text-xs text-slate-500">No messages yet 👋</p>
           )}
 
           {messages.map((msg, i) => {
@@ -220,17 +205,16 @@ export default function ChatRoomPage() {
             return (
               <div key={i} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm ${
+                  className={`max-w-[75%] px-3 py-2 rounded-xl text-sm ${
                     isMe
-                      ? "bg-indigo-600 text-white rounded-br-sm"
-                      : "bg-slate-800 text-slate-100 rounded-bl-sm"
+                      ? "bg-emerald-600 text-white"
+                      : "bg-slate-100 text-slate-800"
                   }`}
                 >
                   <p className="text-[10px] opacity-70 mb-1">
                     {isMe ? "You" : msg.senderName}
                   </p>
 
-                  {/* CLICKABLE LINKS HERE */}
                   <p>{renderMessageWithLinks(msg.message)}</p>
 
                   {msg.createdAt && (
@@ -251,24 +235,23 @@ export default function ChatRoomPage() {
           <button
             onClick={handleStartVideoCall}
             disabled={!socket || !me}
-            className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm hover:bg-emerald-700 disabled:bg-slate-700"
+            className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm hover:bg-emerald-700 disabled:bg-slate-300"
           >
             📹 Video
           </button>
 
           <textarea
-            className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"
+            className="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800"
             rows={1}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
             placeholder="Type a message..."
           />
 
           <button
             onClick={handleSend}
             disabled={!socket || !me}
-            className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700 disabled:bg-slate-700"
+            className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm hover:bg-emerald-700 disabled:bg-slate-300"
           >
             Send
           </button>

@@ -4,6 +4,19 @@ import { useEffect, useMemo, useState } from "react";
 import { apiGet, apiPost } from "../../lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import FoxGuide from "@/components/FoxGuide";
+
+const FOX_QUOTES = [
+  "Don’t worry about perfection — progress is what matters 💪",
+  "Small steps every day lead to big results 🚀",
+  "Learning slowly is still learning 🧠",
+  "Consistency beats motivation every single time 🔥",
+  "You’re not behind — you’re building 🌱",
+  "Every expert was once a beginner ✨",
+  "Show up today. That’s enough 👏",
+];
+
+
 
 export default function DashboardPage() {
   const [user, setUser] = useState(null);
@@ -21,7 +34,20 @@ export default function DashboardPage() {
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
-  useEffect(() => {
+  const [showFox, setShowFox] = useState(true);
+  const todayQuote = useMemo(() => {
+  const today = new Date();
+  const dayNumber = today.getDate(); // 1–31
+  return FOX_QUOTES[dayNumber % FOX_QUOTES.length];
+}, []);
+
+  
+
+  useEffect(() => {const token = localStorage.getItem("access");
+  if (!token) {
+    router.replace("/login");
+    return;
+  }
     async function fetchData() {
       try {
         const [me, recs, incoming, outgoing] = await Promise.all([
@@ -150,25 +176,35 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-emerald-100 text-slate-800 flex">
+
       {/* SIDEBAR (desktop) */}
-      <aside className="hidden sm:flex sm:flex-col w-56 border-r border-slate-900 bg-slate-950/90 p-4 gap-4">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 mb-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800">
-            <span className="text-sm font-semibold">SS</span>
-          </div>
-          <span className="text-sm font-medium text-slate-100">
-            SkillSwap
-          </span>
-        </Link>
+      <aside className="hidden sm:flex sm:flex-col w-56 border-r border-slate-200 bg-white p-4 gap-4">
+
+        {/* Brand */}
+<Link
+  href="/dashboard"
+  onClick={() => setSelectedSection("overview")}
+  className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl
+             bg-emerald-100 border border-emerald-200
+             hover:bg-emerald-200 transition"
+>
+
+
+  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold">
+    SS
+  </div>
+  <span className="text-sm font-semibold text-emerald-800">
+    SkillSwap
+  </span>
+</Link>
 
         {/* User mini card */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 text-xs">
-          <p className="font-semibold text-slate-100">
+        <div className="rounded-xl border border-slate-200 bg-white/70 px-3 py-3 text-xs">
+          <p className="font-semibold text-slate-800">
             {user?.username || "User"}
           </p>
-          <p className="text-[11px] text-slate-400 truncate">
+          <p className="text-[11px] text-slate-600 truncate">
             {user?.email || "No email"}
           </p>
         </div>
@@ -188,11 +224,12 @@ export default function DashboardPage() {
                 key={item.key}
                 onClick={() => setSelectedSection(item.key)}
                 className={
-                  "w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition " +
-                  (isActive
-                    ? "bg-slate-800 text-slate-50"
-                    : "text-slate-300 hover:bg-slate-900/70")
-                }
+  "w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition border " +
+  (isActive
+    ? "bg-emerald-100 text-emerald-700 border-emerald-200 font-medium"
+    : "border-transparent text-slate-600 hover:bg-emerald-50")
+}
+
               >
                 <span>{item.label}</span>
               </button>
@@ -211,7 +248,7 @@ export default function DashboardPage() {
       {/* MAIN AREA */}
       <div className="flex-1 flex flex-col">
         {/* Mobile top bar */}
-        <div className="sm:hidden flex items-center justify-between px-4 py-3 border-b border-slate-900 bg-slate-950/90">
+        <div className="sm:hidden flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-950/90">
           <span className="text-sm font-medium">
             {user ? `Hi, ${user.username}` : "Dashboard"}
           </span>
@@ -228,10 +265,17 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="flex flex-col gap-3 mb-4">
             <div>
+              {showFox && (
+  <FoxGuide
+    mood="curious"
+    message="Hi! I’m your SkillSwap buddy 🦊 Add your skills to start finding matches!"
+  />
+)}
+
               <h1 className="text-xl sm:text-2xl font-semibold">
                 {user ? `Welcome back, ${user.username} 👋` : "Welcome back 👋"}
               </h1>
-              <p className="text-[12px] text-slate-400 mt-1">
+              <p className="text-[12px] text-slate-600 mt-1">
                 {selectedSection === "overview" &&
                   "Quick summary of your matches, requests and connections."}
                 {selectedSection === "matches" &&
@@ -254,11 +298,11 @@ export default function DashboardPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  className="w-full max-w-md px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm text-slate-200 placeholder-slate-500"
+                  className="w-full max-w-md px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm text-slate-800 placeholder-slate-500"
                 />
                 <button
                   onClick={handleSearch}
-                  className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-sm"
+                  className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-sm"
                 >
                   {searchLoading ? "Searching…" : "Search"}
                 </button>
@@ -279,29 +323,29 @@ export default function DashboardPage() {
           )}
 
           {loading ? (
-            <p className="text-sm text-slate-400">Loading…</p>
+            <p className="text-sm text-slate-600">Loading…</p>
           ) : (
             <>
               {/* 🔍 Search results – shown above overview cards */}
               {selectedSection === "overview" && (
                 <>
                   {searchResults.length > 0 ? (
-                    <div className="mb-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-xs">
-                      <p className="text-sm font-semibold mb-2 text-slate-50">
+                    <div className="mb-4 rounded-xl border border-slate-200 bg-white/70 p-4 text-xs">
+                      <p className="text-sm font-semibold mb-2 text-slate-700">
                         Search results
                       </p>
                       {searchResults.map((u) => (
                         <div
                           key={u.id}
-                          className="flex items-center justify-between border-b border-slate-800 py-2"
+                          className="flex items-center justify-between border-b border-slate-200 py-2"
                         >
-                          <span className="text-slate-200 text-sm">
+                          <span className="text-slate-800 text-sm">
                             @{u.username}
                           </span>
                           <div className="flex gap-2">
                             <Link
                               href={`/users/${u.id}`}
-                              className="text-[11px] px-3 py-1 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800"
+                              className="text-[11px] px-3 py-1 rounded-lg border border-slate-200 text-slate-800 hover:bg-white"
                             >
                               View profile
                             </Link>
@@ -312,13 +356,14 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     searchQuery.trim() !== "" && (
-                      <p className="mb-4 text-sm text-slate-400">
+                      <p className="mb-4 text-sm text-slate-600">
                         No users found for “{searchQuery}”.
                       </p>
                     )
                   )}
                 </>
               )}
+
 
               {selectedSection === "overview" && (
                 <OverviewSection
@@ -355,7 +400,30 @@ export default function DashboardPage() {
               {selectedSection === "profile" && <ProfileSection user={user} />}
             </>
           )}
-        </main>
+          {/* 🦊 Floating Fox Guide */}
+<div className="fixed bottom-6 right-6 z-50 flex items-end gap-0">
+
+  {/* Speech bubble */}
+  <div className="max-w-xs bg-white border border-emerald-200 rounded-2xl px-4 py-3 shadow-lg ml-8 mb-10">
+    <p className="text-sm text-slate-700">
+  “{todayQuote}”
+</p>
+
+    <p className="mt-1 text-[11px] text-emerald-600 font-medium">
+      — SkillSwap Fox
+    </p>
+  </div>
+
+  {/* Fox image */}
+  <img
+  src="/mascot/fox-motivated.png"
+  alt="SkillSwap Fox"
+  className="h-44 w-44 object-contain fox-idle"
+/>
+
+</div>
+
+      </main>
       </div>
     </div>
   );
@@ -388,12 +456,12 @@ function OverviewSection({
 
       {/* Top matches + Requests */}
       <div className="grid md:grid-cols-2 gap-4 text-xs">
-        <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-          <p className="text-sm font-semibold mb-2 text-slate-50">
+        <div className="rounded-xl border border-slate-200 bg-white/70 p-4">
+          <p className="text-sm font-semibold mb-2 text-slate-700">
             Top matches
           </p>
           {topMatches.length === 0 ? (
-            <p className="text-[12px] text-slate-400">
+            <p className="text-[12px] text-slate-600">
               No matches yet. Once you or others update skills, you&apos;ll see
               recommendations here.
             </p>
@@ -413,14 +481,14 @@ function OverviewSection({
                 return (
                   <div
                     key={m.id}
-                    className="rounded-lg border border-slate-800 bg-slate-950/40 p-3"
+                    className="rounded-lg border border-slate-200 bg-white p-3"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div>
-                        <p className="text-sm font-medium text-slate-50">
+                        <p className="text-sm font-medium text-slate-700">
                           {m.name}
                         </p>
-                        <p className="text-[11px] text-slate-400">
+                        <p className="text-[11px] text-slate-600">
                           Match score:{" "}
                           <span className="font-mono">
                             {typeof m.score === "number"
@@ -435,14 +503,14 @@ function OverviewSection({
                         className={
                           "text-[11px] px-3 py-1 rounded-lg " +
                           (disabled
-                            ? "bg-slate-800 text-slate-500 cursor-not-allowed"
-                            : "bg-indigo-500 text-white hover:bg-indigo-600")
+                            ? "bg-white text-slate-7000 cursor-not-allowed"
+                            : "bg-emerald-500 text-white hover:bg-emerald-600")
                         }
                       >
                         {label}
                       </button>
                     </div>
-                    <div className="mt-2 text-[11px] text-slate-300 space-y-1">
+                    <div className="mt-2 text-[11px] text-slate-600 space-y-1">
                       <p>
                         <span className="font-semibold">Has:</span>{" "}
                         {renderSkills(m.skills_have)}
@@ -455,17 +523,18 @@ function OverviewSection({
                   </div>
                 );
               })}
+              
             </div>
           )}
         </div>
 
         <div className="space-y-3">
-          <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-            <p className="text-sm font-semibold mb-2 text-slate-50">
+          <div className="rounded-xl border border-slate-200 bg-white/70 p-4">
+            <p className="text-sm font-semibold mb-2 text-slate-700">
               Recent incoming requests
             </p>
             {recentIncoming.length === 0 ? (
-              <p className="text-[12px] text-slate-400">
+              <p className="text-[12px] text-slate-600">
                 No incoming requests yet.
               </p>
             ) : (
@@ -475,7 +544,7 @@ function OverviewSection({
                     <span className="font-medium">
                       {r.from_user_username}
                     </span>{" "}
-                    <span className="text-slate-400">({r.status})</span>
+                    <span className="text-slate-600">({r.status})</span>
                   </p>
                 ))}
               </div>
@@ -484,19 +553,19 @@ function OverviewSection({
             <div className="mt-3 text-[11px]">
               <Link
                 href="/requests"
-                className="text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline"
+                className="text-emerald-300 hover:text-emerald-600 underline-offset-2 hover:underline"
               >
                 Go to requests page
               </Link>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-            <p className="text-sm font-semibold mb-2 text-slate-50">
+          <div className="rounded-xl border border-slate-200 bg-white/70 p-4">
+            <p className="text-sm font-semibold mb-2 text-slate-700">
               Recent outgoing requests
             </p>
             {recentOutgoing.length === 0 ? (
-              <p className="text-[12px] text-slate-400">
+              <p className="text-[12px] text-slate-600">
                 You haven&apos;t requested anyone yet.
               </p>
             ) : (
@@ -506,7 +575,7 @@ function OverviewSection({
                     <span className="font-medium">
                       {r.to_user_username}
                     </span>{" "}
-                    <span className="text-slate-400">({r.status})</span>
+                    <span className="text-slate-600">({r.status})</span>
                   </p>
                 ))}
               </div>
@@ -515,7 +584,7 @@ function OverviewSection({
             <div className="mt-3 text-[11px]">
               <Link
                 href="/requests"
-                className="text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline"
+                className="text-emerald-300 hover:text-emerald-700 underline-offset-2 hover:underline"
               >
                 Manage all requests
               </Link>
@@ -524,14 +593,14 @@ function OverviewSection({
         </div>
       </div>
 
-      <div className="text-[11px] text-slate-400 mt-1">
+      {/* <div className="text-[11px] text-slate-600 mt-1">
         <Link
           href="/connections"
-          className="text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline"
+          className="text-emerald-300 hover:text-emerald-700 underline-offset-2 hover:underline"
         >
           Go to connections (chat & calls)
         </Link>
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -544,7 +613,7 @@ function MatchesSection({
 }) {
   if (matches.length === 0) {
     return (
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-slate-600">
         No matches yet. Once profiles & skills are updated, matches will appear
         here.
       </p>
@@ -566,12 +635,12 @@ function MatchesSection({
         return (
           <div
             key={m.id}
-            className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-xs"
+            className="rounded-xl border border-slate-200 bg-white/70 p-4 text-xs"
           >
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-slate-50">{m.name}</p>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-sm font-semibold text-slate-700">{m.name}</p>
+                <p className="text-[11px] text-slate-600">
                   Match score:{" "}
                   <span className="font-mono">
                     {typeof m.score === "number"
@@ -583,7 +652,7 @@ function MatchesSection({
               <div className="flex gap-2">
                 <Link
                   href={`/users/${m.id}`}
-                  className="text-[11px] px-3 py-1 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800"
+                  className="text-[11px] px-3 py-1 rounded-lg border border-slate-200 text-slate-800 hover:bg-white"
                 >
                   View profile
                 </Link>
@@ -593,15 +662,15 @@ function MatchesSection({
                   className={
                     "text-[11px] px-3 py-1 rounded-lg " +
                     (disabled
-                      ? "bg-slate-800 text-slate-500 cursor-not-allowed"
-                      : "bg-indigo-500 text-white hover:bg-indigo-600")
+                      ? "bg-white text-slate-7000 cursor-not-allowed"
+                      : "bg-emerald-500 text-white hover:bg-emerald-600")
                   }
                 >
                   {label}
                 </button>
               </div>
             </div>
-            <div className="mt-3 space-y-1 text-[11px] text-slate-300">
+            <div className="mt-3 space-y-1 text-[11px] text-slate-600">
               <p>
                 <span className="font-semibold">Has:</span>{" "}
                 {renderSkills(m.skills_have)}
@@ -621,12 +690,12 @@ function MatchesSection({
 function RequestsSection({ incomingRequests, outgoingRequests }) {
   return (
     <div className="grid md:grid-cols-2 gap-4 text-xs">
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-        <p className="text-sm font-semibold mb-2 text-slate-50">
+      <div className="rounded-xl border border-slate-200 bg-white/70 p-4">
+        <p className="text-sm font-semibold mb-2 text-slate-700">
           Incoming requests
         </p>
         {incomingRequests.length === 0 ? (
-          <p className="text-[12px] text-slate-400">
+          <p className="text-[12px] text-slate-600">
             No one has requested to learn from you yet.
           </p>
         ) : (
@@ -636,7 +705,7 @@ function RequestsSection({ incomingRequests, outgoingRequests }) {
                 <span className="font-medium">
                   {r.from_user_username}
                 </span>{" "}
-                <span className="text-slate-400">({r.status})</span>
+                <span className="text-slate-600">({r.status})</span>
               </p>
             ))}
           </div>
@@ -645,19 +714,19 @@ function RequestsSection({ incomingRequests, outgoingRequests }) {
         <div className="mt-3 text-[11px]">
           <Link
             href="/requests"
-            className="text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline"
+            className="text-emerald-300 hover:text-emerald-700 underline-offset-2 hover:underline"
           >
             Open full requests page
           </Link>
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-        <p className="text-sm font-semibold mb-2 text-slate-50">
+      <div className="rounded-xl border border-slate-200 bg-white/70 p-4">
+        <p className="text-sm font-semibold mb-2 text-slate-700">
           Outgoing requests
         </p>
         {outgoingRequests.length === 0 ? (
-          <p className="text-[12px] text-slate-400">
+          <p className="text-[12px] text-slate-600">
             You haven&apos;t requested to learn from anyone yet.
           </p>
         ) : (
@@ -667,7 +736,7 @@ function RequestsSection({ incomingRequests, outgoingRequests }) {
                 <span className="font-medium">
                   {r.to_user_username}
                 </span>{" "}
-                <span className="text-slate-400">({r.status})</span>
+                <span className="text-slate-600">({r.status})</span>
               </p>
             ))}
           </div>
@@ -676,7 +745,7 @@ function RequestsSection({ incomingRequests, outgoingRequests }) {
         <div className="mt-3 text-[11px]">
           <Link
             href="/requests"
-            className="text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline"
+            className="text-emerald-300 hover:text-emerald-700 underline-offset-2 hover:underline"
           >
             Manage all requests
           </Link>
@@ -689,13 +758,13 @@ function RequestsSection({ incomingRequests, outgoingRequests }) {
 function ConnectionsSection({ connections }) {
   if (connections.length === 0) {
     return (
-      <div className="space-y-3 text-sm text-slate-400">
+      <div className="space-y-3 text-sm text-slate-600">
         <p>
           No connections yet. Once a request is accepted, it will appear here.
         </p>
         <Link
           href="/connections"
-          className="text-[11px] text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline"
+          className="text-[11px] text-emerald-300 hover:text-emerald-700 underline-offset-2 hover:underline"
         >
           Open connections page (chat & calls)
         </Link>
@@ -708,19 +777,19 @@ function ConnectionsSection({ connections }) {
       {connections.map((c) => (
         <div
           key={c.id}
-          className="rounded-xl border border-slate-800 bg-slate-900/70 p-3 flex items-center justify-between"
+          className="rounded-xl border border-slate-200 bg-white/70 p-3 flex items-center justify-between"
         >
           <div>
-            <p className="text-sm font-semibold text-slate-50">
+            <p className="text-sm font-semibold text-slate-700">
               {c.username}
             </p>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-slate-600">
               Connected via accepted request
             </p>
           </div>
           <Link
             href="/connections"
-            className="text-[11px] rounded-lg border border-slate-700 px-3 py-1 text-slate-200 hover:bg-slate-800"
+            className="text-[11px] rounded-lg border border-slate-200 px-3 py-1 text-slate-800 hover:bg-white"
           >
             Open chat & calls
           </Link>
@@ -730,7 +799,7 @@ function ConnectionsSection({ connections }) {
       <div className="mt-2 text-[11px]">
         <Link
           href="/connections"
-          className="text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline"
+          className="text-emerald-300 hover:text-emerald-700 underline-offset-2 hover:underline"
         >
           Go to full connections page
         </Link>
@@ -742,25 +811,25 @@ function ConnectionsSection({ connections }) {
 function ProfileSection({ user }) {
   return (
     <div className="max-w-md text-sm space-y-3">
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 space-y-2">
-        <p className="text-sm font-semibold mb-1 text-slate-50">
+      <div className="rounded-xl border border-slate-200 bg-white/70 p-4 space-y-2">
+        <p className="text-sm font-semibold mb-1 text-slate-700">
           Basic details
         </p>
         <p className="text-[13px]">
-          <span className="text-slate-400">Username: </span>
-          <span className="font-medium text-slate-100">
+          <span className="text-slate-600">Username: </span>
+          <span className="font-medium text-slate-800">
             {user?.username || "—"}
           </span>
         </p>
         <p className="text-[13px]">
-          <span className="text-slate-400">Email: </span>
-          <span className="font-medium text-slate-100">
+          <span className="text-slate-600">Email: </span>
+          <span className="font-medium text-slate-800">
             {user?.email || "—"}
           </span>
         </p>
         <p className="text-[13px]">
-          <span className="text-slate-400">User ID: </span>
-          <span className="font-mono text-slate-100">
+          <span className="text-slate-600">User ID: </span>
+          <span className="font-mono text-slate-800">
             {user?.id ?? "—"}
           </span>
         </p>
@@ -769,20 +838,20 @@ function ProfileSection({ user }) {
         <div className="pt-3 flex flex-wrap gap-2">
           <Link
             href="/skills"
-            className="inline-flex items-center rounded-lg border border-slate-700 px-3 py-1.5 text-[11px] text-slate-200 hover:bg-slate-800"
+            className="inline-flex items-center rounded-lg border border-slate-200 px-3 py-1.5 text-[11px] text-slate-800 hover:bg-white"
           >
             Manage skills
           </Link>
           <Link
             href="/profile"
-            className="inline-flex items-center rounded-lg border border-slate-700 px-3 py-1.5 text-[11px] text-indigo-200 hover:bg-slate-800"
+            className="inline-flex items-center rounded-lg border border-slate-200 px-3 py-1.5 text-[11px] text-emerald-700 hover:bg-white"
           >
             Edit portfolio links
           </Link>
         </div>
       </div>
 
-      <p className="text-[11px] text-slate-400">
+      <p className="text-[11px] text-slate-600">
         Keep your skills and links updated. Skills are used for matching, and
         portfolio links (GitHub, LinkedIn, LeetCode, resume) are optional but
         make your profile look much more professional.
@@ -794,9 +863,9 @@ function ProfileSection({ user }) {
 /* small stat card */
 function StatCard({ label, value }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 flex flex-col gap-1">
-      <span className="text-[11px] text-slate-400">{label}</span>
-      <span className="text-lg font-semibold text-slate-50">
+    <div className="rounded-xl border border-slate-200 bg-white/70 px-3 py-3 flex flex-col gap-1">
+      <span className="text-[11px] text-slate-600">{label}</span>
+      <span className="text-lg font-semibold text-slate-700">
         {value}
       </span>
     </div>

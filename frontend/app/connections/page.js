@@ -18,10 +18,8 @@ export default function ConnectionsPage() {
         setConnections(data);
       } catch (err) {
         setError("Session expired. Please login again.");
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("access");
-          localStorage.removeItem("refresh");
-        }
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
         router.push("/login");
       } finally {
         setLoading(false);
@@ -32,22 +30,22 @@ export default function ConnectionsPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex items-start justify-center px-4 py-6 sm:px-6 sm:py-10">
-      <div className="w-full max-w-4xl rounded-2xl border border-slate-800 bg-slate-900/70 shadow-2xl px-5 py-6 sm:px-7 sm:py-7 space-y-4">
+    <div className="min-h-screen bg-emerald-50 flex justify-center px-4 py-8">
+      <div className="w-full max-w-4xl bg-white rounded-2xl border border-slate-200 px-6 py-6 space-y-5">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between gap-4 border-b border-slate-800 pb-3">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
           <div>
-            <h1 className="text-lg sm:text-xl font-semibold">
+            <h1 className="text-xl font-semibold text-slate-800">
               Your connections
             </h1>
-            <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
-              These are the students you&apos;re connected with. Start a chat to collaborate.
+            <p className="text-xs text-slate-600 mt-1">
+              Students you’re connected with. Start a chat to collaborate.
             </p>
           </div>
           <button
             onClick={() => router.push("/dashboard")}
-            className="text-[11px] sm:text-xs text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline"
+            className="text-xs text-emerald-600 hover:underline"
           >
             Back to dashboard
           </button>
@@ -55,92 +53,85 @@ export default function ConnectionsPage() {
 
         {/* ERROR */}
         {error && (
-          <p className="text-[11px] text-red-300 bg-red-950/40 border border-red-800 px-3 py-2 rounded-lg">
+          <p className="text-xs text-red-700 bg-red-100 border border-red-200 px-3 py-2 rounded-lg">
             {error}
           </p>
         )}
 
         {/* LOADING */}
         {loading && (
-          <p className="text-xs sm:text-sm text-slate-400 mt-2">
+          <p className="text-sm text-slate-500">
             Loading connections…
           </p>
         )}
 
-        {/* NO CONNECTIONS */}
+        {/* EMPTY */}
         {!loading && !error && connections.length === 0 && (
-          <p className="text-xs sm:text-sm text-slate-400 mt-2">
-            You don&apos;t have any connections yet. Once a learning request is
-            accepted, it will appear here.
+          <p className="text-sm text-slate-500">
+            You don’t have any connections yet.
           </p>
         )}
 
-        {/* CONNECTIONS LIST */}
+        {/* LIST */}
         {!loading && !error && connections.length > 0 && (
-          <div className="space-y-3 mt-2">
+          <div className="space-y-3">
             {connections.map((c) => {
               const hasConversation = !!c.conversation_id;
 
               return (
                 <div
                   key={c.id}
-                  className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 sm:px-5 sm:py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm"
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                 >
                   {/* USER INFO */}
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-slate-800 text-white flex items-center justify-center text-sm font-semibold">
+                    <div className="h-9 w-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-semibold">
                       {c.other_user_username
                         ? c.other_user_username[0].toUpperCase()
                         : "U"}
                     </div>
 
                     <div>
-                      <p className="text-sm sm:text-base font-semibold text-slate-50">
+                      <p className="font-semibold text-slate-800">
                         {c.other_user_username}
                       </p>
                       {c.other_user_email && (
-                        <p className="text-[11px] text-slate-400">
+                        <p className="text-xs text-slate-500">
                           {c.other_user_email}
                         </p>
                       )}
-                      <p className="text-[11px] text-slate-400 mt-1">
+                      <p className="text-xs text-slate-600 mt-0.5">
                         You are their{" "}
-                        <span className="font-medium text-slate-100">
+                        <span className="font-medium">
                           {c.role === "teacher" ? "teacher" : "learner"}
                         </span>
-                        .
                       </p>
-                      <p className="text-[10px] text-slate-500 mt-1">
-                        Status:{" "}
-                        <span className="font-mono text-slate-200">
-                          {c.status?.toUpperCase()}
-                        </span>
+                      <p className="text-[11px] text-slate-500">
+                        Status: {c.status?.toUpperCase()}
                       </p>
                     </div>
                   </div>
 
-                  {/* ACTION BUTTONS */}
-                  <div className="flex flex-wrap gap-2 sm:gap-3">
-                    {/* View profile */}
+                  {/* ACTIONS */}
+                  <div className="flex gap-2">
                     <Link
                       href={`/users/${c.other_user_id}`}
-                      className="inline-flex items-center justify-center rounded-lg border border-slate-700 px-3 py-1.5 text-[11px] sm:text-xs text-slate-100 hover:bg-slate-800"
+                      className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50"
                     >
                       View profile
                     </Link>
 
-                    {/* Chat */}
                     {hasConversation ? (
                       <Link
                         href={`/chat/${c.conversation_id}`}
-                        className="inline-flex items-center justify-center rounded-lg bg-indigo-500 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-white hover:bg-indigo-600"
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600 text-xs font-medium text-white hover:bg-emerald-700"
                       >
                         Chat
                       </Link>
                     ) : (
                       <button
                         disabled
-                        className="inline-flex items-center justify-center rounded-lg bg-slate-800 px-3 py-1.5 text-[11px] sm:text-xs text-slate-500 cursor-not-allowed"
+                        className="px-3 py-1.5 rounded-lg bg-slate-200 text-xs text-slate-500 cursor-not-allowed"
                       >
                         Chat unavailable
                       </button>

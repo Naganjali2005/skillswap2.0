@@ -4,6 +4,7 @@ import { useState } from "react";
 import { apiPost } from "../../lib/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 export default function SignupPage() {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -20,35 +21,43 @@ export default function SignupPage() {
 
     try {
       await apiPost("/api/auth/register/", form);
-      setMessage("Signup successful! Redirecting...");
-      setTimeout(() => router.push("/login"), 1000);
+      setMessage("Account created 🌱 Redirecting...");
+      setTimeout(() => router.push("/login"), 900);
     } catch (err) {
-      setMessage("Error: " + JSON.stringify(err));
+      setMessage("Something went wrong 😅 Try again.");
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center px-4">
-      {/* Compact Card */}
-      <div className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900 px-6 py-7 shadow-xl">
-        {/* small logo */}
-        <div className="flex flex-col items-center mb-5">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-mint-100 flex items-center justify-center px-6">
+      
+      {/* SIGNUP CARD */}
+      <motion.div
+        initial={{ opacity: 0, y: 16, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="w-[380px] rounded-2xl bg-white p-8 shadow-xl"
+      >
+        {/* LOGO + TITLE */}
+        <div className="mb-6 flex flex-col items-center">
           <Link href="/" className="flex items-center gap-2 mb-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800">
-              <span className="text-sm font-semibold">SS</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 font-semibold">
+              SS
             </div>
-            <span className="text-sm font-medium text-slate-100">
+            <span className="text-sm font-medium text-slate-800">
               SkillSwap
             </span>
           </Link>
 
-          <h1 className="text-lg font-semibold">Create Account</h1>
-          <p className="text-[12px] text-slate-400 mt-1">
-            Join SkillSwap in a minute
+          <h1 className="text-lg font-semibold text-slate-800">
+            Create your account
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Join SkillSwap in under a minute
           </p>
         </div>
 
-        {/* signup form */}
+        {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-3 text-sm">
           <input
             name="username"
@@ -56,7 +65,7 @@ export default function SignupPage() {
             autoComplete="off"
             value={form.username}
             onChange={handleChange}
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-800 outline-none placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200 transition"
           />
 
           <input
@@ -65,7 +74,7 @@ export default function SignupPage() {
             autoComplete="off"
             value={form.email}
             onChange={handleChange}
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-800 outline-none placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200 transition"
           />
 
           <input
@@ -75,34 +84,36 @@ export default function SignupPage() {
             autoComplete="off"
             value={form.password}
             onChange={handleChange}
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-800 outline-none placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200 transition"
           />
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             type="submit"
-            className="w-full rounded-lg bg-indigo-500 py-2 text-sm font-semibold text-white hover:bg-indigo-600 active:scale-[0.98] transition"
+            className="mt-2 w-full rounded-xl bg-emerald-500 py-2.5 font-semibold text-white shadow hover:bg-emerald-600 transition"
           >
-            Sign Up
-          </button>
-
-          {message && (
-            <p className="mt-2 text-center text-[12px] text-slate-300">
-              {message}
-            </p>
-          )}
+            Create free account →
+          </motion.button>
         </form>
 
-        {/* footer */}
-        <p className="mt-4 text-[11px] text-center text-slate-400">
+        {message && (
+          <p className="mt-3 text-xs text-center text-slate-500">
+            {message}
+          </p>
+        )}
+
+        {/* FOOTER */}
+        <p className="mt-5 text-xs text-center text-slate-500">
           Already have an account?{" "}
           <Link
             href="/login"
-            className="text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline"
+            className="text-emerald-600 hover:underline underline-offset-2"
           >
             Login
           </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

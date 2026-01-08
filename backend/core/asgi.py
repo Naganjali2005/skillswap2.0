@@ -11,11 +11,11 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 
 from chat.routing import websocket_urlpatterns as chat_ws
-from call.routing import websocket_urlpatterns as call_ws
+
 
 
 # 3) Combine chat + video websocket routes
-websocket_urlpatterns = chat_ws + call_ws
+websocket_urlpatterns = chat_ws 
 
 
 # 4) Final ASGI application
