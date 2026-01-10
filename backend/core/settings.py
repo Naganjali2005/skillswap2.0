@@ -24,9 +24,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-1234567890"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG") == "True"
 
-ALLOWED_HOSTS = ["*"]
+
+ALLOWED_HOSTS = [
+    "skillswap2-0-1.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
+
 
 
 
@@ -53,6 +58,9 @@ INSTALLED_APPS = [
      'chat', 
      
 ]
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 from datetime import timedelta
 from django.conf import settings
@@ -81,6 +89,7 @@ SIMPLE_JWT = {
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -173,6 +182,17 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://skillswap2-0-frontend.vercel.app",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://skillswap2-0-frontend.vercel.app",
+    "https://skillswap2-0-1.onrender.com",
+]
+
+CORS_ALLOW_ALL_ORIGINS = False
+DEBUG = True
+
 CORS_ALLOW_CREDENTIALS = True
 
