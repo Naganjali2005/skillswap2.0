@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'corsheaders',
 
     # your app
-    'api',
+    'api.apps.ApiConfig',
+
     
     'rest_framework_simplejwt',
     'channels',
