@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.db.models import Q
 from rest_framework import generics
 from rest_framework import permissions
+from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
+
 
 
 
@@ -40,6 +42,7 @@ User = get_user_model()
 # -------------------------------
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
 
     def post(self, request):
         print("DATA RECEIVED:", request.data)
