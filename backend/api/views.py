@@ -158,7 +158,7 @@ class SkillsListView(APIView):
     Returns the list of all skills (for selection in frontend).
     You will add/edit skills in Django admin only.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         from .serializers import SkillSerializer

@@ -20,9 +20,10 @@ export default function SignupPage() {
     e.preventDefault();
     setMessage("");
     setLoading(true);
-
+    console.log("Submitting signup form:", form);
     try {
-      await apiPost("/api/auth/register/", form);
+      const response = await apiPost("/api/auth/register/", form);
+      console.log("Signup response:", response);
       setMessage("Account created 🌱 Redirecting...");
       setTimeout(() => router.push("/login"), 1000);
     } catch (err) {

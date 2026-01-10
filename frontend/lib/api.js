@@ -1,14 +1,8 @@
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== "undefined" && window.location.hostname !== "localhost"
-    ? "https://skillswap2-0.onrender.com"
-    : "http://localhost:8000");
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 const WS_BASE =
-  process.env.NEXT_PUBLIC_WS_URL ||
-  (typeof window !== "undefined" && window.location.hostname !== "localhost"
-    ? "wss://skillswap2-0.onrender.com"
-    : "ws://localhost:8000");
+  process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
 
 function getAuthHeaders(withAuth) {
   const headers = { "Content-Type": "application/json" };
