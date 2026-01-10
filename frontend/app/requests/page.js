@@ -21,18 +21,24 @@ export default function RequestsPage() {
       setIncoming(incomingData);
       setOutgoing(outgoingData);
     } catch (err) {
-      setMessage("Error loading requests. Please login again.");
+      setMessage("Session expired. Please login again.");
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
-      router.push("/login");
+      router.replace("/login");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
+    const token = localStorage.getItem("access");
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
     loadRequests();
-  }, []);
+  }, [router]);
 
   async function handleIncomingAction(id, action) {
     setMessage("");

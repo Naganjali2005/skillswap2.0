@@ -29,6 +29,12 @@ export default function ProfilePage() {
   const router = useRouter();
 
   useEffect(() => {
+    const token = localStorage.getItem("access");
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
     async function fetchData() {
       try {
         const me = await apiGet("/api/auth/me/");
@@ -44,13 +50,16 @@ export default function ProfilePage() {
           resume_url: data.resume_url || "",
         });
       } catch {
-        setLinksError("Could not load profile. Please login again.");
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+        router.replace("/login");
       } finally {
         setLoading(false);
       }
     }
+
     fetchData();
-  }, []);
+  }, [router]);
 
   function handleAccountChange(e) {
     const { name, value } = e.target;

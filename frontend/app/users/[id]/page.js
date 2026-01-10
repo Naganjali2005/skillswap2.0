@@ -14,6 +14,12 @@ export default function UserProfilePage() {
   const router = useRouter();
 
   useEffect(() => {
+    const token = localStorage.getItem("access");
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
     if (!id) return;
 
     async function loadData() {
@@ -27,6 +33,13 @@ export default function UserProfilePage() {
         const req = outgoing.find((r) => r.to_user === id);
         setRequestStatus(req?.status || null);
       } catch (err) {
+        if (err?.detail?.toLowerCase()?.includes("token")) {
+          localStorage.removeItem("access");
+          localStorage.removeItem("refresh");
+          router.replace("/login");
+          return;
+        }
+
         setError(
           err?.detail ||
             err?.error ||
@@ -36,7 +49,7 @@ export default function UserProfilePage() {
     }
 
     loadData();
-  }, [id]);
+  }, [id, router]);
 
   async function handleRequest() {
     try {

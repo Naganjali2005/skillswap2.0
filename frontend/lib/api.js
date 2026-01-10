@@ -1,10 +1,14 @@
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined" && window.location.hostname !== "localhost"
+    ? "https://skillswap2-0.onrender.com"
+    : "http://localhost:8000");
+
 const WS_BASE =
-  process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
-
-
-
+  process.env.NEXT_PUBLIC_WS_URL ||
+  (typeof window !== "undefined" && window.location.hostname !== "localhost"
+    ? "wss://skillswap2-0.onrender.com"
+    : "ws://localhost:8000");
 
 function getAuthHeaders(withAuth) {
   const headers = { "Content-Type": "application/json" };
@@ -27,9 +31,7 @@ export async function apiPost(path, body, withAuth = false) {
   let data = {};
   try {
     data = await res.json();
-  } catch {
-    data = {};
-  }
+  } catch {}
 
   if (!res.ok) throw data;
   return data;
@@ -45,9 +47,7 @@ export async function apiPatch(path, body, withAuth = false) {
   let data = {};
   try {
     data = await res.json();
-  } catch {
-    data = {};
-  }
+  } catch {}
 
   if (!res.ok) throw data;
   return data;
@@ -66,10 +66,10 @@ export async function apiGet(path) {
   let data = {};
   try {
     data = await res.json();
-  } catch {
-    data = {};
-  }
+  } catch {}
 
   if (!res.ok) throw data;
   return data;
 }
+
+export { WS_BASE };

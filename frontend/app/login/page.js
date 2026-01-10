@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 export default function LoginPage() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   function handleChange(e) {
@@ -19,6 +20,7 @@ export default function LoginPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setMessage("");
+    setLoading(true);
 
     try {
       const data = await apiPost("/api/auth/login/", form);
@@ -31,29 +33,32 @@ export default function LoginPage() {
       setMessage("Welcome back 🌱 Redirecting...");
       setTimeout(() => router.push("/dashboard"), 800);
     } catch (err) {
-      setMessage("Hmm 🤔 something went wrong. Try again.");
+      setMessage(
+        err?.detail ||
+        err?.non_field_errors?.[0] ||
+        "Invalid username or password 😅"
+      );
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-mint-100 flex items-center justify-center px-6 relative">
-      
-      {/* CENTER WRAPPER */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="relative"
       >
-
-        {/* 🦊 FOX — ABSOLUTE (does NOT affect centering) */}
+        {/* 🦊 FOX */}
         <div className="hidden md:block absolute -left-72 top-1/2 -translate-y-1/2">
           <motion.div
             animate={{ y: [0, -6, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
             <Image
-              src="/mascot/fox-curious.png" // ✅ transparent PNG
+              src="/mascot/fox-curious.png"
               alt="Curious learning fox"
               width={220}
               height={220}
@@ -71,14 +76,13 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* 🔐 LOGIN CARD — PERFECT CENTER */}
+        {/* 🔐 LOGIN CARD */}
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.35 }}
           className="w-[380px] rounded-2xl bg-white p-8 shadow-xl"
         >
-          {/* LOGO */}
           <div className="mb-6 flex flex-col items-center">
             <Link href="/" className="flex items-center gap-2 mb-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 font-semibold">
@@ -93,14 +97,14 @@ export default function LoginPage() {
             </h1>
           </div>
 
-          {/* FORM */}
           <form onSubmit={handleSubmit} className="space-y-3 text-sm">
             <input
               name="username"
               placeholder="Username"
               value={form.username}
               onChange={handleChange}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-800 outline-none placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200 transition"
+              required
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5"
             />
 
             <input
@@ -109,16 +113,18 @@ export default function LoginPage() {
               placeholder="Password"
               value={form.password}
               onChange={handleChange}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-800 outline-none placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200 transition"
+              required
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5"
             />
 
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               type="submit"
+              disabled={loading}
               className="mt-2 w-full rounded-xl bg-emerald-500 py-2.5 font-semibold text-white shadow hover:bg-emerald-600 transition"
             >
-              Continue learning →
+              {loading ? "Logging in..." : "Continue learning →"}
             </motion.button>
           </form>
 

@@ -26,6 +26,12 @@ export default function SkillsPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const token = localStorage.getItem("access");
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
     async function loadData() {
       try {
         const skills = await apiGet("/api/skills/");
@@ -36,15 +42,15 @@ export default function SkillsPage() {
         setWantList(mySkills?.want || []);
       } catch (err) {
         setError(
-          err?.detail ||
-            "Could not load skills. Please try again."
+          err?.detail || "Could not load skills. Please try again."
         );
       } finally {
         setLoading(false);
       }
     }
+
     loadData();
-  }, []);
+  }, [router]);
 
   function findSkillName(skillId) {
     const s = allSkills.find((sk) => sk.id === skillId);
@@ -117,8 +123,8 @@ export default function SkillsPage() {
         true
       );
       setMessage("Skills updated successfully ✔");
-    } catch {
-      setError("Could not save skills.");
+    } catch (err) {
+      setError(err?.detail || "Could not save skills.");
     } finally {
       setSaving(false);
     }

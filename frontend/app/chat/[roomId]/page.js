@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { apiGet } from "../../../lib/api";
+import { apiGet, WS_BASE } from "../../../lib/api";
 
 /* ---------- Helpers ---------- */
 
@@ -61,18 +61,27 @@ export default function ChatRoomPage() {
   const messagesEndRef = useRef(null);
   const otherName = searchParams.get("name") || "Your connection";
 
-  /* ---------- Fetch current user ---------- */
+  /* ---------- Auth Guard + Fetch current user ---------- */
   useEffect(() => {
+    const token = localStorage.getItem("access");
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
     async function fetchMe() {
       try {
         const data = await apiGet("/api/auth/me/");
         setMe(data);
       } catch (err) {
         console.error(err);
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+        router.replace("/login");
       }
     }
     fetchMe();
-  }, []);
+  }, [router]);
 
   /* ---------- Load chat history ---------- */
   useEffect(() => {
@@ -102,16 +111,25 @@ export default function ChatRoomPage() {
   useEffect(() => {
     if (!roomId) return;
 
-    const ws = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${roomId}/`);
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    const ws = new WebSocket(
+      `${WS_BASE}/ws/chat/${roomId}/?token=${token}`
+    );
 
     ws.onopen = () => setConnectionStatus("connected");
+
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       setMessages((prev) => [
         ...prev,
         {
           ...data,
-          createdAt: data.createdAt || data.created_at || new Date().toISOString(),
+          createdAt:
+            data.createdAt ||
+            data.created_at ||
+            new Date().toISOString(),
         },
       ]);
     };
@@ -130,7 +148,8 @@ export default function ChatRoomPage() {
 
   /* ---------- Send text ---------- */
   const handleSend = () => {
-    if (!socket || socket.readyState !== WebSocket.OPEN || !input.trim()) return;
+    if (!socket || socket.readyState !== WebSocket.OPEN || !input.trim())
+      return;
 
     socket.send(
       JSON.stringify({
@@ -200,10 +219,16 @@ export default function ChatRoomPage() {
           {messages.map((msg, i) => {
             const isMe =
               me &&
-              msg.senderName?.toLowerCase() === me.username.toLowerCase();
+              msg.senderName?.toLowerCase() ===
+                me.username.toLowerCase();
 
             return (
-              <div key={i} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+              <div
+                key={i}
+                className={`flex ${
+                  isMe ? "justify-end" : "justify-start"
+                }`}
+              >
                 <div
                   className={`max-w-[75%] px-3 py-2 rounded-xl text-sm ${
                     isMe

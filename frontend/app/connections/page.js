@@ -12,6 +12,12 @@ export default function ConnectionsPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const token = localStorage.getItem("access");
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
     async function fetchConnections() {
       try {
         const data = await apiGet("/api/connections/");
@@ -20,7 +26,7 @@ export default function ConnectionsPage() {
         setError("Session expired. Please login again.");
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
-        router.push("/login");
+        router.replace("/login");
       } finally {
         setLoading(false);
       }

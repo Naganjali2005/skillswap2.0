@@ -2,13 +2,23 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { apiGet } from "../../lib/api"; // adjust path if needed
+import { apiGet } from "../../lib/api";
+import { useRouter } from "next/navigation";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("access");
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+  }, [router]);
 
   useEffect(() => {
     if (!query.trim()) {
@@ -26,7 +36,6 @@ export default function SearchPage() {
           `/api/users/search/?q=${encodeURIComponent(query)}`
         );
 
-        // handle DRF paginated or non-paginated
         setResults(data.results || data);
       } catch (err) {
         console.error(err);
@@ -34,7 +43,7 @@ export default function SearchPage() {
       } finally {
         setLoading(false);
       }
-    }, 400); // debounce: waits 400ms after typing stops
+    }, 400);
 
     return () => clearTimeout(timeoutId);
   }, [query]);
