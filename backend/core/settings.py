@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from rest_framework.permissions import AllowAny
+
+permission_classes = [AllowAny]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -184,9 +187,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "https://skillswap2-0-frontend.vercel.app",
+    "http://localhost:3000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
     "https://skillswap2-0-frontend.vercel.app",
     "https://skillswap2-0-1.onrender.com",
 ]
@@ -195,4 +200,13 @@ CORS_ALLOW_ALL_ORIGINS = False
 DEBUG = True
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
 
